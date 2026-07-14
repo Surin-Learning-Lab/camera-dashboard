@@ -83,6 +83,7 @@
     align-items: center;
     justify-content: center;
     position: relative;
+    cursor: pointer;
   }
   .feed-wrap.rotated {
     aspect-ratio: 3 / 4;
@@ -104,6 +105,20 @@
     font-size: 0.85rem;
   }
   .feed-wrap.error img { display: none; }
+  .quality-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.6);
+    color: var(--text);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    letter-spacing: 0.03em;
+    pointer-events: none;
+  }
+  .quality-badge.full { background: rgba(59,130,246,0.85); }
   .cam-controls {
     display: flex;
     align-items: center;
@@ -148,7 +163,7 @@
 <script>
 // Add or remove cameras here — name, Tailscale HTTPS URL (no trailing slash), rotation in degrees (0, 90, 180, -90)
 const cameras = [
-  { name: "Camera 1 (piCam)", url: "https://picam.taila87d51.ts.net", rotation: -90 },
+  { name: "Camera 1 (piCam)", url: "https://picam.taila87d51.ts.net", rotation: 0 },
   { name: "Camera 2 (piCam2)", url: "https://picam2.taila87d51.ts.net", rotation: 0 },
   { name: "Camera 3 (test)", url: "https://test.taila87d51.ts.net", rotation: 90 },
 ];
@@ -164,8 +179,9 @@ cameras.forEach((cam, i) => {
       <span class="cam-name">${cam.name}</span>
       <span class="status-label"><span class="status-dot" id="dot-${i}"></span><span id="status-${i}">checking</span></span>
     </div>
-    <div class="feed-wrap ${rotated ? 'rotated' : ''}" id="feed-${i}">
-      <img src="${cam.url}/stream.mjpg" id="img-${i}" style="transform: rotate(${cam.rotation || 0}deg);" />
+    <div class="feed-wrap ${rotated ? 'rotated' : ''}" id="feed-${i}" title="Tap to toggle full quality">
+      <img src="${cam.url}/thumb.mjpg" id="img-${i}" style="transform: rotate(${cam.rotation || 0}deg);" />
+      <span class="quality-badge" id="quality-${i}">THUMB</span>
     </div>
     <div class="cam-controls">
       <span class="motion-label" id="motion-label-${i}">Motion: unknown</span>
@@ -180,8 +196,10 @@ cameras.forEach((cam, i) => {
   const status = document.getElementById(`status-${i}`);
   const motionLabel = document.getElementById(`motion-label-${i}`);
   const motionBtn = document.getElementById(`motion-btn-${i}`);
+  const qualityBadge = document.getElementById(`quality-${i}`);
 
   let motionOn = false; // dashboard doesn't know the Pi's current state until you toggle from here
+  let fullQuality = false;
 
   img.addEventListener('load', () => {
     feed.classList.remove('error');
@@ -195,13 +213,21 @@ cameras.forEach((cam, i) => {
     status.textContent = 'offline';
   });
 
+  feed.addEventListener('click', () => {
+    fullQuality = !fullQuality;
+    img.src = cam.url + (fullQuality ? '/stream.mjpg' : '/thumb.mjpg');
+    qualityBadge.textContent = fullQuality ? 'FULL' : 'THUMB';
+    qualityBadge.className = 'quality-badge' + (fullQuality ? ' full' : '');
+  });
+
   function renderMotion() {
     motionLabel.textContent = 'Motion: ' + (motionOn ? 'ON' : 'OFF');
     motionBtn.textContent = motionOn ? 'Turn Off' : 'Turn On';
     motionBtn.className = 'toggle' + (motionOn ? '' : ' off');
   }
 
-  motionBtn.addEventListener('click', () => {
+  motionBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // don't trigger the feed's quality-toggle click
     const endpoint = motionOn ? '/motion/off' : '/motion/on';
     fetch(cam.url + endpoint)
       .then(() => {
