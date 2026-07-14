@@ -84,11 +84,18 @@
     justify-content: center;
     position: relative;
   }
+  .feed-wrap.rotated {
+    aspect-ratio: 3 / 4;
+  }
   .feed-wrap img {
     width: 100%;
     height: 100%;
     object-fit: contain;
     display: block;
+  }
+  .feed-wrap.rotated img {
+    width: auto;
+    height: 100%;
   }
   .feed-wrap.error::after {
     content: "Camera unreachable";
@@ -97,6 +104,30 @@
     font-size: 0.85rem;
   }
   .feed-wrap.error img { display: none; }
+  .cam-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+  }
+  .motion-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  button.toggle {
+    border: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--accent);
+    color: white;
+  }
+  button.toggle.off {
+    background: #2d3138;
+    color: var(--muted);
+  }
   footer {
     text-align: center;
     color: var(--muted);
@@ -115,15 +146,16 @@
 <footer>Streams load only if your device is connected to Tailscale.</footer>
 
 <script>
-// Add or remove cameras here — name + Tailscale HTTPS URL (no trailing slash)
+// Add or remove cameras here — name, Tailscale HTTPS URL (no trailing slash), rotation in degrees (0, 90, 180, -90)
 const cameras = [
-  { name: "Camera 1 (piCam)", url: "https://picam.taila87d51.ts.net" },
-  { name: "Camera 2 (piCam2)", url: "https://picam2.taila87d51.ts.net" },
+  { name: "Camera 1 (piCam)", url: "https://picam.taila87d51.ts.net", rotation: -90 },
+  { name: "Camera 2 (piCam2)", url: "https://picam2.taila87d51.ts.net", rotation: 0 },
 ];
 
 const grid = document.getElementById('camGrid');
 
 cameras.forEach((cam, i) => {
+  const rotated = Math.abs((cam.rotation || 0) % 180) === 90;
   const card = document.createElement('div');
   card.className = 'cam-card';
   card.innerHTML = `
@@ -131,8 +163,12 @@ cameras.forEach((cam, i) => {
       <span class="cam-name">${cam.name}</span>
       <span class="status-label"><span class="status-dot" id="dot-${i}"></span><span id="status-${i}">checking</span></span>
     </div>
-    <div class="feed-wrap" id="feed-${i}">
-      <img src="${cam.url}/stream.mjpg" id="img-${i}" />
+    <div class="feed-wrap ${rotated ? 'rotated' : ''}" id="feed-${i}">
+      <img src="${cam.url}/stream.mjpg" id="img-${i}" style="transform: rotate(${cam.rotation || 0}deg);" />
+    </div>
+    <div class="cam-controls">
+      <span class="motion-label" id="motion-label-${i}">Motion: unknown</span>
+      <button class="toggle off" id="motion-btn-${i}">Turn On</button>
     </div>
   `;
   grid.appendChild(card);
@@ -141,6 +177,10 @@ cameras.forEach((cam, i) => {
   const feed = document.getElementById(`feed-${i}`);
   const dot = document.getElementById(`dot-${i}`);
   const status = document.getElementById(`status-${i}`);
+  const motionLabel = document.getElementById(`motion-label-${i}`);
+  const motionBtn = document.getElementById(`motion-btn-${i}`);
+
+  let motionOn = false; // dashboard doesn't know the Pi's current state until you toggle from here
 
   img.addEventListener('load', () => {
     feed.classList.remove('error');
@@ -153,6 +193,26 @@ cameras.forEach((cam, i) => {
     dot.className = 'status-dot offline';
     status.textContent = 'offline';
   });
+
+  function renderMotion() {
+    motionLabel.textContent = 'Motion: ' + (motionOn ? 'ON' : 'OFF');
+    motionBtn.textContent = motionOn ? 'Turn Off' : 'Turn On';
+    motionBtn.className = 'toggle' + (motionOn ? '' : ' off');
+  }
+
+  motionBtn.addEventListener('click', () => {
+    const endpoint = motionOn ? '/motion/off' : '/motion/on';
+    fetch(cam.url + endpoint)
+      .then(() => {
+        motionOn = !motionOn;
+        renderMotion();
+      })
+      .catch(() => {
+        motionLabel.textContent = 'Motion: request failed';
+      });
+  });
+
+  renderMotion();
 });
 </script>
 
