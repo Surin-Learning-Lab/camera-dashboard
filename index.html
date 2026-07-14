@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camera Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card: #171a21;
+    --accent: #3b82f6;
+    --good: #22c55e;
+    --bad: #ef4444;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 32px 16px 64px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0 0 32px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .cam-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .cam-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .cam-name {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--muted);
+    display: inline-block;
+    margin-right: 6px;
+  }
+  .status-dot.online { background: var(--good); box-shadow: 0 0 6px var(--good); }
+  .status-dot.offline { background: var(--bad); }
+  .status-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+  }
+  .feed-wrap {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .feed-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .feed-wrap.error::after {
+    content: "Camera unreachable";
+    position: absolute;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .feed-wrap.error img { display: none; }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Camera Dashboard</h1>
+<p class="subtitle">Live feeds &mdash; visible only to devices on the Tailscale network</p>
+
+<div class="grid" id="camGrid"></div>
+
+<footer>Streams load only if your device is connected to Tailscale.</footer>
+
+<script>
+// Add or remove cameras here — name + Tailscale HTTPS URL (no trailing slash)
+const cameras = [
+  { name: "Camera 1 (test)", url: "https://test.taila87d51.ts.net" },
+  { name: "Camera 2 (piCam2)", url: "https://picam2.taila87d51.ts.net" },
+];
+
+const grid = document.getElementById('camGrid');
+
+cameras.forEach((cam, i) => {
+  const card = document.createElement('div');
+  card.className = 'cam-card';
+  card.innerHTML = `
+    <div class="cam-header">
+      <span class="cam-name">${cam.name}</span>
+      <span class="status-label"><span class="status-dot" id="dot-${i}"></span><span id="status-${i}">checking</span></span>
+    </div>
+    <div class="feed-wrap" id="feed-${i}">
+      <img src="${cam.url}/stream.mjpg" id="img-${i}" />
+    </div>
+  `;
+  grid.appendChild(card);
+
+  const img = document.getElementById(`img-${i}`);
+  const feed = document.getElementById(`feed-${i}`);
+  const dot = document.getElementById(`dot-${i}`);
+  const status = document.getElementById(`status-${i}`);
+
+  img.addEventListener('load', () => {
+    feed.classList.remove('error');
+    dot.className = 'status-dot online';
+    status.textContent = 'online';
+  });
+
+  img.addEventListener('error', () => {
+    feed.classList.add('error');
+    dot.className = 'status-dot offline';
+    status.textContent = 'offline';
+  });
+});
+</script>
+
+</body>
+</html>
