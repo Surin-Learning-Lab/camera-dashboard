@@ -19,3 +19,6 @@ If it asks which editor, pick nano (usually option 1). Add this line at the bott
 Save and exit (Ctrl+O, Enter, Ctrl+X). This runs every day at 3 AM and clears anything older than a week, so the SD card never fills up unattended.
 
 Want the automatic cleanup set up the same way on your other three Pis too, or just deal with test for now?
+
+## If a sd card change is needed first the host needs to be updated. This example uses the piCam,  use: 
+ssh-keygen -R piCam.local
