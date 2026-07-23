@@ -9,7 +9,7 @@ nano stream.py
 
 Set this up to run automatically so you never have to think about it (e.g. auto-delete anything older than 7 days, once a day):
 
-bash
+
 crontab -e
 
 If it asks which editor, pick nano (usually option 1). Add this line at the bottom:
