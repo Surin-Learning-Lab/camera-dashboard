@@ -283,3 +283,6 @@ Saved on the Pi under `~/motion_snapshots/`. Pull them to your computer with:
 ```bash
 scp <username>@<pi-ip>:~/motion_snapshots/*.jpg .
 ```
+*** chech server / start server
+sudo tailscale serve --bg 8090
+tailscale serve status
