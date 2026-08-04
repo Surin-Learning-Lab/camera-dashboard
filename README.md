@@ -7,6 +7,7 @@ find ~/motion_snapshots/ -name "*.jpg" -mtime +7 -print -delete
 ## To open the python script use:
 nano stream.py
 
+## Delete Chronologically
 Set this up to run automatically so you never have to think about it (e.g. auto-delete anything older than 7 days, once a day):
 
 
