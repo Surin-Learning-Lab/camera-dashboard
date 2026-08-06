@@ -1,5 +1,5 @@
 ## To open the images on PC use in the terminal not the ssh:
-scp pi@192.168.1.105:~/motion_snapshots/*.jpg .
+scp pi@192.168.1.xxx:~/motion_snapshots/*.jpg .
 
 ## To delete older files on the sd:
 find ~/motion_snapshots/ -name "*.jpg" -mtime +7 -print -delete
