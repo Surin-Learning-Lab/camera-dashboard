@@ -251,6 +251,12 @@ Since each Pi runs its own independent stream server, you can view several at on
 
 Save as an `.html` file and open it directly in a browser. There's no hard software limit on how many cameras you can add — the practical limits are your viewing device's bandwidth (each stream is roughly 1–3 Mbps) and each Pi's own CPU handling its own encoding independently.
 
+
+## Enable HTTPS serving — the step that's caused every "shows offline" issue so far
+
+bash
+sudo tailscale serve --bg 8090
+tailscale serve status
 ---
 
 ## Troubleshooting
