@@ -118,7 +118,7 @@ pip install numpy --break-system-packages
    If it's not `pi`, edit the `fname` line inside `stream.py`'s `motion_detector()` function to match your actual home directory.
 4. **Set the rotation** to match how the camera is physically mounted, near the top of `stream.py`:
    ```python
-   ROTATION_DEG = -90  # 0, 90, 180, or -90
+   ROTATION_DEG = 90  # 0, 90, 180, 270 etc
    ```
 
 ---
