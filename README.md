@@ -182,6 +182,15 @@ sudo systemctl status camstream
 
 Confirm it shows `active (running)`.
 
+## Add start stop timing to crono
+
+0 22 * * * systemctl stop camstream
+0 6 * * * systemctl start camstream
+
+## on off commands
+
+sudo systemctl stop camstream
+sudo systemctl start camstream
 ---
 
 ## 9. Set up remote access with Tailscale
