@@ -184,6 +184,8 @@ Confirm it shows `active (running)`.
 
 ## Add start stop timing to crono
 
+sudo crontab -e
+
 0 22 * * * systemctl stop camstream
 
 0 6 * * * systemctl start camstream
