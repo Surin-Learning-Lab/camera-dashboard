@@ -13,6 +13,9 @@ The stream has no built-in authentication. That is a deliberate design decision,
 - **Process management:** systemd service with restart policy, cron-scheduled start and stop
 - **Remote access:** Tailscale, with `tailscale serve` for HTTPS
 
+![Pi Camera](piCam.png)
+
+
 ## Repository contents
 
 | File | Purpose |
